@@ -1,0 +1,54 @@
+@import 'tailwindcss';
+
+@layer base {
+	html {
+		scroll-behavior: smooth;
+	}
+
+	body {
+		background-color: rgb(254 243 199);
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
+		color: rgb(17 24 39);
+	}
+}
+
+@layer components {
+	.btn-primary {
+		border-radius: 0.5rem;
+		background-color: rgb(180 83 9);
+		padding: 0.75rem 1.5rem;
+		font-weight: 500;
+		color: white;
+		transition: background-color 0.2s;
+	}
+
+	.btn-primary:hover {
+		background-color: rgb(146 64 14);
+	}
+
+	.btn-secondary {
+		border-radius: 0.5rem;
+		background-color: rgb(229 231 235);
+		padding: 0.75rem 1.5rem;
+		font-weight: 500;
+		color: rgb(31 41 55);
+		transition: background-color 0.2s;
+	}
+
+	.btn-secondary:hover {
+		background-color: rgb(209 213 219);
+	}
+
+	.card {
+		border-radius: 0.5rem;
+		box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+		transition: box-shadow 0.3s;
+	}
+
+	.card:hover {
+		box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+	}
+}

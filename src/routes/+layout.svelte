@@ -1,12 +1,20 @@
 <script lang="ts">
-	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
-
-	let { children } = $props();
+	import Header from '$lib/components/Header.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import '$lib/styles/globals.css';
 </script>
 
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
+<div class="flex flex-col min-h-screen">
+	<Header />
+	<main class="flex-1">
+		<slot />
+	</main>
+	<Footer />
+</div>
 
-{@render children()}
+<style>
+	:global(html, body) {
+		background-color: rgb(254 243 199);
+		color: rgb(17 24 39);
+	}
+</style>
