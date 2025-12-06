@@ -32,7 +32,7 @@
 					on:click={() => toggleDropdown(item.label)}
 					on:mouseenter={() => (openDropdown = item.label)}
 					on:mouseleave={closeDropdown}
-					class="relative text-gray-600 hover:text-amber-700 font-medium text-sm transition-colors duration-300 flex items-center gap-1 {isActive(
+					class="relative text-gray-600 hover:text-amber-700 font-medium text-sm transition-colors duration-300 flex items-center gap-1 cursor-pointer {isActive(
 						item.href
 					)
 						? 'text-amber-700'
@@ -56,11 +56,12 @@
 
 				<!-- Dropdown Panel -->
 				{#if openDropdown === item.label}
+					<!-- svelte-ignore a11y_interactive_supports_focus -->
 					<div
 						role="menu"
 						on:mouseenter={() => (openDropdown = item.label)}
 						on:mouseleave={closeDropdown}
-						class="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
+						class="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border cursor-pointer border-gray-200 py-2 z-50"
 					>
 						{#each item.dropdown as dropdownItem (dropdownItem.href)}
 							<a
