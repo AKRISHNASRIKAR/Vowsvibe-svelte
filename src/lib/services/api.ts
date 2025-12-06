@@ -1,23 +1,14 @@
 class ApiClient {
-	async get<T>(chapterId: number): Promise<T> {
-		try {
-			// Use our server-side proxy to avoid CORS issues
-			const response = await fetch(`/api/chapters/${chapterId}`);
+  async get<T>(chapterId: number): Promise<T> {
+    const res = await fetch(`/api/chapters/${chapterId}`);
 
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-			}
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+    }
 
-			const data = await response.json();
-
-			// Return the data directly since the API wraps everything in a response object
-			return data as T;
-		} catch (error) {
-			console.error('API Error:', error);
-			throw error;
-		}
-	}
+    return await res.json() as T;
+  }
 }
 
 export const apiClient = new ApiClient();

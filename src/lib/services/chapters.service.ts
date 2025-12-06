@@ -1,67 +1,70 @@
 import { apiClient } from './api';
 
-// BhagavadGita.io API format
 export interface ApiVerseRaw {
-	id: number;
-	verse_number: number;
-	chapter_number: number;
-	slug: string;
-	text: string; // Sanskrit
-	transliteration: string;
-	word_meanings: string;
-	translations: Array<{
-		id: number;
-		description: string;
-		author_name: string;
-		language: string;
-	}>;
+  geeta_id: string;
+  chapter_no: string;
+  shlok_no: string;
+  lyrics: string;
+  music: string;
+  qr: string;
+}
+
+interface SanskritApiResponse {
+  status: number;
+  message: string;
+  data: ApiVerseRaw[];
 }
 
 export interface ParsedVerse {
-	verse_number: number;
-	text: string;
-	transliteration: string;
-	translation: string;
-	word_meanings: string;
+  verse_number: number;
+  text: string;
+  transliteration: string;
+  translation: string;
+  word_meanings: string;
+}
+
+// strip HTML from `lyrics`
+function extractTextFromHtml(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function parseVerseData(verse: ApiVerseRaw): ParsedVerse {
-	// Get the first English translation
-	const englishTranslation = verse.translations?.find((t) => t.language === 'english');
+  const fullText = extractTextFromHtml(verse.lyrics ?? '');
 
-	return {
-		verse_number: verse.verse_number,
-		text: verse.text || '',
-		transliteration: verse.transliteration || '',
-		translation: englishTranslation?.description || '',
-		word_meanings: verse.word_meanings || ''
-	};
+  return {
+    verse_number: parseInt(verse.shlok_no) || 0,
+    text: fullText.substring(0, 300) || `Verse ${verse.shlok_no}`,
+    transliteration: '',
+    translation: fullText,
+    word_meanings: ''
+  };
 }
 
 export const chaptersService = {
-	async getChapterVerses(chapterNumber: number): Promise<ParsedVerse[]> {
-		try {
-			const response = await apiClient.get<ApiVerseRaw[]>(chapterNumber);
+  async getChapterVerses(chapterNumber: number): Promise<ParsedVerse[]> {
+    try {
+      const response = await apiClient.get<SanskritApiResponse>(chapterNumber);
+      console.log('API Response (client):', response);
 
-			console.log('API Response:', response);
-			console.log('Is array?:', Array.isArray(response));
+      if (!response?.data || !Array.isArray(response.data)) {
+        console.error('Response.data is not array:', response);
+        return [];
+      }
 
-			if (!Array.isArray(response)) {
-				console.error('Response is not an array:', response);
-				return [];
-			}
+      const parsedVerses = response.data
+        .filter(v => v.shlok_no !== '99')
+        .map(parseVerseData)
+        .filter(v => v.verse_number > 0);
 
-			const parsedVerses = response.map(parseVerseData);
-
-			console.log('Parsed verses count:', parsedVerses.length);
-			console.log('First verse:', parsedVerses[0]);
-
-			return parsedVerses;
-		} catch (error) {
-			console.error(`Error fetching chapter ${chapterNumber}:`, error);
-			throw new Error(
-				error instanceof Error ? error.message : `Failed to fetch chapter ${chapterNumber}`
-			);
-		}
-	}
+      console.log('Parsed verses:', parsedVerses);
+      return parsedVerses;
+    } catch (error) {
+      console.error(`Error fetching chapter ${chapterNumber}:`, error);
+      throw new Error(`Failed to fetch chapter ${chapterNumber}`);
+    }
+  }
 };

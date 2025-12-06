@@ -2,32 +2,30 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ params, fetch }) => {
-	const chapterId = params.id;
+  const chapterId = params.id;
 
-	try {
-		// Using BhagavadGita.io API - no auth required for basic usage
-		const response = await fetch(`https://bhagavadgita.io/api/v1/chapters/${chapterId}/verses`, {
-			headers: {
-				Accept: 'application/json'
-			}
-		});
+  try {
+    // IMPORTANT: use the exact API URL (http, not https, no extra path)
+    const res = await fetch(`http://sanskrit.ie/api/geeta.php?q=${chapterId}`);
 
-		if (!response.ok) {
-			throw new Error(`API returned ${response.status}`);
-		}
+    const text = await res.text();          // read as text first
 
-		const data = await response.json();
-		console.log('Raw API Response:', data);
+    // Debug: see what actually comes back
+    console.log('Upstream status:', res.status);
+    console.log('First 200 chars:', text.slice(0, 200));
 
-		return json(data);
-	} catch (error) {
-		console.error('Error fetching chapter:', error);
-		return json(
-			{
-				error: error instanceof Error ? error.message : 'Failed to fetch chapter data',
-				verses: []
-			},
-			{ status: 500 }
-		);
-	}
+    // If it looks like HTML, do NOT try to parse JSON
+    if (text.trim().startsWith('<')) {
+      throw new Error('Upstream returned HTML, not JSON');
+    }
+
+    const data = JSON.parse(text);         // now safely parse JSON string
+    return json(data);
+  } catch (err) {
+    console.error('Error fetching chapter:', err);
+    return json(
+      { error: 'Failed to fetch chapter data' },
+      { status: 500 }
+    );
+  }
 };
